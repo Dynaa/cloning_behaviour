@@ -4,9 +4,9 @@ import csv
 from scipy import ndimage
 import numpy as np 
 from keras.models import Sequential
-from keras.layers import Flatten, Dense
-
-from keras.layers import Lambda
+from keras.layers import Flatten, Dense, Lambda
+from keras.layers.convolutional import Convolution2D
+from keras.layers.pooling import MaxPooling2D
 
 
 def read_data(data_directory): 
@@ -43,6 +43,10 @@ def simple_model():
 	model.add(Dense(1))
 
 	return model 
+
+def LeNet_model(): 
+	model = model.add(Conv2D(32, (3, 3), input_shape=(32, 32, 3)))
+
 
 
 X_train, y_train = read_data('./data/')
