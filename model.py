@@ -44,10 +44,6 @@ def simple_model():
 
 	return model 
 
-def LeNet_model(): 
-	model = model.add(Conv2D(32, (3, 3), input_shape=(32, 32, 3)))
-
-
 
 X_train, y_train = read_data('./data/')
 
