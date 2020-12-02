@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import csv
-import cv2
+from scipy import ndimage
 import numpy as np 
 from keras.models import Sequential
 from keras.layers import Flatten, Dense
@@ -26,7 +26,7 @@ def read_data(data_directory):
 		filename = source_path.split('/')[-1]
 		current_path = data_directory+'IMG/' + filename
 		#print(current_path)
-		image = cv2.imread(current_path)
+		image = ndimage.imread(current_path)
 		images.append(image)
 		measurement = float(line[3])
 		measurements.append(measurement)
