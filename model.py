@@ -2,6 +2,9 @@
 
 import csv
 import cv2
+import numpy as np 
+from keras.model import Sequential
+from keras.layers import Flatten, Dense
 
 
 def read_data(data_directory): 
