@@ -6,6 +6,8 @@ import numpy as np
 from keras.models import Sequential
 from keras.layers import Flatten, Dense
 
+from keras.layers import Lambda
+
 
 def read_data(data_directory): 
 	lines = []
