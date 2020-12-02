@@ -3,32 +3,34 @@
 import csv
 import cv2
 import numpy as np 
-from keras.model import Sequential
+from keras.models import Sequential
 from keras.layers import Flatten, Dense
 
 
 def read_data(data_directory): 
 	lines = []
-    with open(data_directory+'driving_log.csv') as csvfile:
-        reader = csv.reader(csvfile)
-        next(reader, None)  # skip the headers #skip header
-        for line in reader:
-            lines.append(line)
+	with open(data_directory+'driving_log.csv') as csvfile:
+		reader = csv.reader(csvfile)
+		next(reader, None)  # skip the headers #skip header
+		for line in reader:
+			lines.append(line)
 
-    images = []
-    measurements = []
-    for line in lines:
-        source_path = line[0]
-        filename = source_path.split('/')[-1]
-        current_path = data_directory+'IMG/' + filename
-        #print(current_path)
-        image = cv2.imread(current_path)
-        images.append(image)
-        measurement = float(line[3])
-        measurements.append(measurement)
+	print(line)
 
-    X_train = np.array(images)
-    y_train = np.array(measurements)
+	images = []
+	measurements = []
+	for line in lines:
+		source_path = line[0]
+		filename = source_path.split('/')[-1]
+		current_path = data_directory+'IMG/' + filename
+		#print(current_path)
+		image = cv2.imread(current_path)
+		images.append(image)
+		measurement = float(line[3])
+		measurements.append(measurement)
+
+	X_train = np.array(images)
+	y_train = np.array(measurements)
 
 	return X_train, y_train
 
@@ -41,10 +43,10 @@ def simple_model():
 	return model 
 
 
-X_train, y_train = read_data("./data")
+X_train, y_train = read_data('./data/')
 
-model = simple_model()
-model.compile(loss='mse', optmizer='adam')
-model.fit(x_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=7)
-model.save('model.h5')
+#model = simple_model()
+#model.compile(loss='mse', optmizer='adam')
+#model.fit(x_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=7)
+#model.save('model.h5')
 
