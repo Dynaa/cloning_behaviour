@@ -54,13 +54,13 @@ def LeNet_model():
 	model.add(Lambda(lambda x: (x/ 255.0) - 0.5))
 
 	# Convolution C1 
-	model.add(Conv2D(filters = 6, kernel_size = 5, strides = 1, activation = 'relu')
+	model.add(Conv2D(filters = 6, kernel_size = 5, strides = 1, activation = 'relu'))
 
 	# Pooling layer S2
 	model.add(MaxPooling2D())
 
 	# Convolution C3
-	model.add(Conv2D(filters = 6, kernel_size = 5, strides = 1, activation = 'relu')
+	model.add(Conv2D(filters = 6, kernel_size = 5, strides = 1, activation = 'relu'))
 
 	# Pooling layer S4
 	model.add(MaxPooling2D())
@@ -74,12 +74,12 @@ def LeNet_model():
 
 	model.add(Dense(1))
 	
-	return model 
+	return model
 
 
 X_train, y_train = read_data('./data/')
 
-model = simple_model()
+model = LeNet_model()
 model.compile(loss='mse', optimizer='adam')
 model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=7)
 model.save('model.h5')
