@@ -44,6 +44,38 @@ def simple_model():
 
 	return model 
 
+def LeNet_model(): 
+	model = Sequential()
+
+	# Crop images 
+	model.add(Cropping2D(cropping=((70,25),(0,0)), input_shape=(160,320,3)))
+
+	# Normalization 
+	model.add(Lambda(lambda x: (x/ 255.0) - 0.5))
+
+	# Convolution C1 
+	model.add(Conv2D(filters = 6, kernel_size = 5, strides = 1, activation = 'relu')
+
+	# Pooling layer S2
+	model.add(MaxPooling2D())
+
+	# Convolution C3
+	model.add(Conv2D(filters = 6, kernel_size = 5, strides = 1, activation = 'relu')
+
+	# Pooling layer S4
+	model.add(MaxPooling2D())
+
+	# Fully connected
+	model.add(Flatten())
+
+	model.add(Dense(120))
+
+	model.add(Dense(84))
+
+	model.add(Dense(1))
+	
+	return model 
+
 
 X_train, y_train = read_data('./data/')
 
