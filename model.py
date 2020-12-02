@@ -5,8 +5,9 @@ from scipy import ndimage
 import numpy as np 
 from keras.models import Sequential
 from keras.layers import Flatten, Dense
-
-from keras.layers import Lambda
+from keras.layers.convolutional import Convolution2D
+from keras.layers.pooling import MaxPooling2D
+from keras.layers import Lambda, Cropping2D
 
 
 def read_data(data_directory): 
@@ -54,13 +55,13 @@ def LeNet_model():
 	model.add(Lambda(lambda x: (x/ 255.0) - 0.5))
 
 	# Convolution C1 
-	model.add(Conv2D(filters = 6, kernel_size = 5, strides = 1, activation = 'relu'))
+	model.add(Convolution2D(filters = 6, kernel_size = 5, strides = 1, activation = 'relu'))
 
 	# Pooling layer S2
 	model.add(MaxPooling2D())
 
 	# Convolution C3
-	model.add(Conv2D(filters = 6, kernel_size = 5, strides = 1, activation = 'relu'))
+	model.add(Convolution2D(filters = 6, kernel_size = 5, strides = 1, activation = 'relu'))
 
 	# Pooling layer S4
 	model.add(MaxPooling2D())
