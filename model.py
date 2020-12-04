@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 
 from keras.models import Sequential
-from keras.layers import Flatten, Dense, Lambda
+from keras.layers import Flatten, Dense, Lambda, Cropping2D
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
 
@@ -20,16 +20,17 @@ def read_data(data_directory):
 		for line in reader:
 			lines.append(line)
 
-	print(line)
+	#print(line)
 
 	images = []
 	measurements = []
 	for line in lines:
 		source_path = line[0]
 		filename = source_path.split('/')[-1]
+		#print(filename)
 		current_path = data_directory+'IMG/' + filename
 		#print(current_path)
-		image = ndimage.imread(current_path)
+		image = plt.imread(current_path)
 		images.append(image)
 		measurement = float(line[3])
 		measurements.append(measurement)
@@ -38,6 +39,9 @@ def read_data(data_directory):
 	y_train = np.array(measurements)
 
 	return X_train, y_train
+
+def read_csv_file(data_directory):
+	return 0
 
 def simple_model():
 	model = Sequential()
@@ -57,13 +61,13 @@ def LeNet_model():
 	model.add(Lambda(lambda x: (x/ 255.0) - 0.5))
 
 	# Convolution C1 
-	model.add(Conv2D(filters = 6, kernel_size = 5, strides = 1, activation = 'relu'))
+	model.add(Convolution2D(filters = 6, kernel_size = 5, strides = 1, activation = 'relu'))
 
 	# Pooling layer S2
 	model.add(MaxPooling2D())
 
 	# Convolution C3
-	model.add(Conv2D(filters = 6, kernel_size = 5, strides = 1, activation = 'relu'))
+	model.add(Convolution2D(filters = 6, kernel_size = 5, strides = 1, activation = 'relu'))
 
 	# Pooling layer S4
 	model.add(MaxPooling2D())
@@ -91,40 +95,58 @@ def augment_data(images, measurements):
 	return np.array(augmented_images), np.array(augmented_measurements)
 
 
-def use_left_right_camera(data_directory): 
+def use_left_right_camera(data_directory):
+	lines = []
+	with open(data_directory+'driving_log.csv') as csvfile:
+		reader = csv.reader(csvfile)
+		next(reader, None)  # skip the headers #skip header
+		for line in reader:
+			lines.append(line)
 
-	with open(data_directory+'driving_log.csv', 'r') as f:
-		reader = csv.reader(f)
-		for row in reader:
-			measurement_center = float(row[3])
+	print(line)
 
-			# create adjusted steering measurements for the side camera images
-			correction = 0.2 # this is a parameter to tune
-			measurement_left = measurement_center + correction
-			measurement_right = measurement_center - correction
+	images = []
+	measurements = []
 
-			# read in images from center, left and right cameras
-			source_path = row[0]
-			filename = source_path.split('/')[-1]
-			current_path = data_directory+'IMG'+filename
-			img_center = plt.imread(current_path + row[0])
-			img_left = plt.imread(current_path + row[1])
-			img_right = plt.imread(current_path + row[2])
+	for line in lines:
+		steering_center = float(line[3])
 
-			# add images and angles to data set
-			images.extend(img_center, img_left, img_right)
-			measurements.extend(steering_center, steering_left, steering_right)
+		# create adjusted steering measurements for the side camera images
+		correction = 0.2 # this is a parameter to tune
+		steering_left = steering_center + correction
+		steering_right = steering_center - correction
+
+		# read in images from center, left and right cameras
+		filename_center = line[0].split('/')[-1]
+		filename_left = line[1].split('/')[-1]
+		filename_right = line[2].split('/')[-1]
+		current_path_center = data_directory+'IMG/'+filename_center
+		current_path_left = data_directory+'IMG/'+filename_left
+		current_path_right = data_directory+'IMG/'+filename_right
+		img_center = plt.imread(current_path_center)
+		img_left = plt.imread(current_path_left)
+		img_right = plt.imread(current_path_right)
+
+		# add images and angles to data set
+		images.append(img_center)
+		images.append(img_left)
+		images.append(img_right)
+		measurements.append(steering_center)
+		measurements.append(steering_left)
+		measurements.append(steering_right)
+
 	return images, measurements
 
 
 
+#X_train, y_train = read_data('./data/')
 X_train, y_train = use_left_right_camera('./data/')
-print(len(X_train))
-X_train, y_train = augment_images(X_train, y_train)
-print(len(X_train))
+#print(len(X_train))
+X_train, y_train = augment_data(X_train, y_train)
+#print(len(X_train))
 
 model = LeNet_model()
 model.compile(loss='mse', optimizer='adam')
-model.fit(X_train, y_train, validation_split=0.2, shuffle=True, nb_epoch=2)
+model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=2)
 model.save('model.h5')
 
