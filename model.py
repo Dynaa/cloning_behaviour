@@ -2,7 +2,10 @@
 
 import csv
 from scipy import ndimage
-import numpy as np 
+import numpy as np
+import matplotlib.pyplot as plt
+
+
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda
 from keras.layers.convolutional import Convolution2D
@@ -76,8 +79,49 @@ def LeNet_model():
 	
 	return model
 
+def augment_data(images, measurements):
+	augmented_images, augmented_measurements = [], [] 
 
-X_train, y_train = read_data('./data/')
+	for image, measurement in zip(images, measurements): 
+		augmented_images.append(image)
+		augmented_measurements.append(measurements)
+		augmented_images.append(np.fliplr(image))
+		augmented_measurements.append(-measurement)
+
+	return np.array(augmented_images), np.array(augmented_measurements)
+
+
+def use_left_right_camera(data_directory): 
+
+	with open(data_directory+'driving_log.csv', 'r') as f:
+		reader = csv.reader(f)
+		for row in reader:
+			measurement_center = float(row[3])
+
+			# create adjusted steering measurements for the side camera images
+			correction = 0.2 # this is a parameter to tune
+			measurement_left = measurement_center + correction
+			measurement_right = measurement_center - correction
+
+			# read in images from center, left and right cameras
+			source_path = row[0]
+			filename = source_path.split('/')[-1]
+			current_path = data_directory+'IMG'+filename
+			img_center = plt.imread(current_path + row[0])
+			img_left = plt.imread(current_path + row[1])
+			img_right = plt.imread(current_path + row[2])
+
+			# add images and angles to data set
+			images.extend(img_center, img_left, img_right)
+			measurements.extend(steering_center, steering_left, steering_right)
+	return images, measurements
+
+
+
+X_train, y_train = use_left_right_camera('./data/')
+print(len(X_train))
+X_train, y_train = augment_images(X_train, y_train)
+print(len(X_train))
 
 model = LeNet_model()
 model.compile(loss='mse', optimizer='adam')
