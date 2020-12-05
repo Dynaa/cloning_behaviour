@@ -2,14 +2,13 @@
 
 import csv
 from scipy import ndimage
-import numpy as np
-import matplotlib.pyplot as plt
 
-
+import numpy as np 
 from keras.models import Sequential
-from keras.layers import Flatten, Dense, Lambda, Cropping2D
+from keras.layers import Flatten, Dense
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
+from keras.layers import Lambda, Cropping2D
 
 
 def read_data(data_directory): 
@@ -92,6 +91,7 @@ def augment_data(images, measurements):
 	return np.array(augmented_images), np.array(augmented_measurements)
 
 
+
 def use_left_right_camera(data_directory):
 	lines = []
 	with open(data_directory+'driving_log.csv') as csvfile:
@@ -141,6 +141,7 @@ X_train, y_train = use_left_right_camera('./data/')
 #print(len(X_train))
 #X_train, y_train = augment_data(X_train, y_train)
 #print(len(X_train))
+
 
 model = LeNet_model()
 model.compile(loss='mse', optimizer='adam')
