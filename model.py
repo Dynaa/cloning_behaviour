@@ -19,9 +19,6 @@ def read_data(data_directory):
 		next(reader, None)  # skip the headers #skip header
 		for line in reader:
 			lines.append(line)
-
-	#print(line)
-
 	images = []
 	measurements = []
 	for line in lines:
@@ -30,7 +27,7 @@ def read_data(data_directory):
 		#print(filename)
 		current_path = data_directory+'IMG/' + filename
 		#print(current_path)
-		image = plt.imread(current_path)
+		image = ndimage.imread(current_path)
 		images.append(image)
 		measurement = float(line[3])
 		measurements.append(measurement)
@@ -123,9 +120,9 @@ def use_left_right_camera(data_directory):
 		current_path_center = data_directory+'IMG/'+filename_center
 		current_path_left = data_directory+'IMG/'+filename_left
 		current_path_right = data_directory+'IMG/'+filename_right
-		img_center = plt.imread(current_path_center)
-		img_left = plt.imread(current_path_left)
-		img_right = plt.imread(current_path_right)
+		img_center = ndimage.imread(current_path_center)
+		img_left = ndimage.imread(current_path_left)
+		img_right = ndimage.imread(current_path_right)
 
 		# add images and angles to data set
 		images.append(img_center)
@@ -135,18 +132,18 @@ def use_left_right_camera(data_directory):
 		measurements.append(steering_left)
 		measurements.append(steering_right)
 
-	return images, measurements
+	return np.array(images), np.array(measurements)
 
 
 
 #X_train, y_train = read_data('./data/')
 X_train, y_train = use_left_right_camera('./data/')
 #print(len(X_train))
-X_train, y_train = augment_data(X_train, y_train)
+#X_train, y_train = augment_data(X_train, y_train)
 #print(len(X_train))
 
 model = LeNet_model()
 model.compile(loss='mse', optimizer='adam')
 model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=2)
 model.save('model.h5')
-
+print("End")
