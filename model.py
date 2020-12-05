@@ -174,16 +174,32 @@ def use_left_right_camera(data_directory):
 	return np.array(images), np.array(measurements)
 
 
+def create_sample(data_directory): 
+	samples = []
+	with open(data_directory+'./driving_log.csv') as csvfile:
+		reader = csv.reader(csvfile)
+		for line in reader:
+			samples.append(line)
+
+	return samples
+
+def generator():
+	
+
 
 #X_train, y_train = read_data('./data/')
-X_train, y_train = use_left_right_camera('./data/')
+#X_train, y_train = use_left_right_camera('./data/')
 #print(len(X_train))
 #X_train, y_train = augment_data(X_train, y_train)
 #print(len(X_train))
 
+samples = create_sample('./data/')
+train_samples, validation_samples = train_test_split(sample_list, test_size=0.2)
 
-model = LeNet_model()
-model.compile(loss='mse', optimizer='adam')
-model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=2)
-model.save('model.h5')
+print(samples)
+
+#model = LeNet_model()
+#model.compile(loss='mse', optimizer='adam')
+#model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=2)
+#model.save('model.h5')
 print("End")
