@@ -82,26 +82,26 @@ def LeNet_model():
 def Nvidia_model(): 
 	model = Sequential()
 
-	# Crop images 
-	model.add(Cropping2D(cropping=((70,25),(0,0)), input_shape=(160,320,3)))
-
 	# Normalization 
-	model.add(Lambda(lambda x: (x/ 255.0) - 0.5))
+	model.add(Lambda(lambda x: (x/ 255.0) - 0.5, input_shape=(160,320,3)))
+    
+    # Crop images 
+	model.add(Cropping2D(cropping=((70,25),(0,0))))
 
 	# Convolution 1
-	model.add(Convolution2D(24,5,5,subsample(2,2), activation = 'relu'))
+	model.add(Convolution2D(24,5,5,subsample=(2,2), activation = 'relu'))
 
 	# Convolution 2
-	model.add(Convolution2D(36,5,5,subsample(2,2), activation = 'relu'))
+	model.add(Convolution2D(36,5,5,subsample=(2,2), activation = 'relu'))
 
 	# Convolution 3
-	model.add(Convolution2D(48,5,5,subsample(2,2), activation = 'relu'))
+	model.add(Convolution2D(48,5,5,subsample=(2,2), activation = 'relu'))
 
 	# Convolution 4
-	model.add(Convolution2D(64,3,3,subsample(2,2), activation = 'relu'))
+	model.add(Convolution2D(64,3,3, activation = 'relu'))
 
 	# Convolution 5
-	model.add(Convolution2D(64,3,3,subsample(2,2), activation = 'relu'))
+	model.add(Convolution2D(64,3,3, activation = 'relu'))
 
 	# Fully connected
 	model.add(Flatten())
@@ -111,6 +111,8 @@ def Nvidia_model():
 	model.add(Dense(50))
 
 	model.add(Dense(10))
+    
+	model.add(Dense(1))
 
 	return model
 
@@ -198,8 +200,9 @@ train_samples, validation_samples = train_test_split(sample_list, test_size=0.2)
 
 print(samples)
 
-#model = LeNet_model()
-#model.compile(loss='mse', optimizer='adam')
-#model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=2)
-#model.save('model.h5')
+model = Nvidia_model()
+model.compile(loss='mse', optimizer='adam')
+model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=5)
+model.save('model.h5')
 print("End")
+
