@@ -185,8 +185,63 @@ def create_sample(data_directory):
 
 	return samples
 
-def generator():
-	
+def generator(samples, batch_size=32):
+	num_samples = len(samples)
+	while 1: # Loop forever so the generator never terminates
+		shuffle(samples)
+		for offset in range(0, num_samples, batch_size):
+			batch_samples = samples[offset:offset+batch_size]
+
+			images = []
+			angles = []
+			for batch_sample in batch_samples:
+				
+				# load center image
+				name_center = './IMG/'+batch_sample[0].split('/')[-1]
+				center_image = cv2.imread(name_center)
+				images.append(center_image)
+
+				# flip center image
+				images.append(np.fliplr(center_image))
+
+				# load left image
+				name_left = './IMG/'+batch_sample[1].split('/')[-1]
+				left_image = ndimage.imread(name_left)
+				images.append(left_image)
+
+				# flip left image
+				images.append(np.fliplr(left_image))
+
+				# load right image	
+				right_name = './IMG/'+batch_sample[2].split('/')[-1]
+				right_image = ndimage.imread(right_name)
+				images.append(right_image)
+
+				# flip right image
+				images.append(np.fliplr(right_image))
+
+				# load center angle
+				center_angle = float(batch_sample[3])
+				angles.append(center_angle)
+
+				# flip center angle 
+				angles.append(-center_angle)
+
+				# compute left and right angles
+				correction = 0.2 # this is a parameter to tune
+				left_angle = center_angle + correction
+				right_angle = center_angle - correction
+				angles.append(left_angle)
+				angles.append(right_angle)
+
+				# flip left and right angle
+				angles.append(-left_angle)
+				angles.append(-right_angle)
+
+            # trim image to only see section with road
+			X_train = np.array(images)
+			y_train = np.array(angles)
+			yield sklearn.utils.shuffle(X_train, y_train)	
 
 
 #X_train, y_train = read_data('./data/')
@@ -198,11 +253,22 @@ def generator():
 samples = create_sample('./data/')
 train_samples, validation_samples = train_test_split(sample_list, test_size=0.2)
 
-print(samples)
+# Set our batch size
+batch_size=32
+
+# compile and train the model using the generator function
+train_generator = generator(train_samples, batch_size=batch_size)
+validation_generator = generator(validation_samples, batch_size=batch_size)
+
 
 model = Nvidia_model()
 model.compile(loss='mse', optimizer='adam')
-model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=5)
+model.fit_generator(train_generator, /
+            steps_per_epoch=ceil(len(train_samples)/batch_size), /
+            validation_data=validation_generator, /
+            validation_steps=ceil(len(validation_samples)/batch_size), /
+            epochs=5, verbose=1)
+#model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=5)
 model.save('model.h5')
 print("End")
 
