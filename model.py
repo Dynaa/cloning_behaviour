@@ -1,14 +1,20 @@
 #!/usr/bin/env python
 
+import os
+import math
 import csv
+import sklearn
+import matplotlib.pyplot as plt
+import numpy as np 
+
 from scipy import ndimage
 
-import numpy as np 
 from keras.models import Sequential
-from keras.layers import Flatten, Dense
-from keras.layers.convolutional import Convolution2D
+from keras.layers import Flatten, Dense, Dropout
+from keras.layers.convolutional import Conv2D
 from keras.layers.pooling import MaxPooling2D
 from keras.layers import Lambda, Cropping2D
+from sklearn.model_selection import train_test_split
 
 
 def read_data(data_directory): 
@@ -89,30 +95,31 @@ def Nvidia_model():
 	model.add(Cropping2D(cropping=((70,25),(0,0))))
 
 	# Convolution 1
-	model.add(Convolution2D(24,5,5,subsample=(2,2), activation = 'relu'))
+	model.add(Conv2D(24, (5, 5), strides=(2, 2), activation="relu"))
 
 	# Convolution 2
-	model.add(Convolution2D(36,5,5,subsample=(2,2), activation = 'relu'))
+	model.add(Conv2D(36, (5, 5), strides=(2, 2), activation="relu"))
 
 	# Convolution 3
-	model.add(Convolution2D(48,5,5,subsample=(2,2), activation = 'relu'))
+	model.add(Conv2D(48, (5, 5), strides=(2, 2), activation="relu"))
 
 	# Convolution 4
-	model.add(Convolution2D(64,3,3, activation = 'relu'))
+	model.add(Conv2D(64, (3, 3), activation="relu"))
 
 	# Convolution 5
-	model.add(Convolution2D(64,3,3, activation = 'relu'))
+	model.add(Conv2D(64, (3, 3), activation="relu"))
 
 	# Fully connected
 	model.add(Flatten())
 
 	model.add(Dense(100))
-
+    
 	model.add(Dense(50))
 
 	model.add(Dense(10))
     
 	model.add(Dense(1))
+    
 
 	return model
 
@@ -185,10 +192,10 @@ def create_sample(data_directory):
 
 	return samples
 
-def generator(samples, batch_size=32):
+def generator(samples, data_directory, batch_size=32):
 	num_samples = len(samples)
 	while 1: # Loop forever so the generator never terminates
-		shuffle(samples)
+		sklearn.utils.shuffle(samples)
 		for offset in range(0, num_samples, batch_size):
 			batch_samples = samples[offset:offset+batch_size]
 
@@ -197,15 +204,15 @@ def generator(samples, batch_size=32):
 			for batch_sample in batch_samples:
 				
 				# load center image
-				name_center = './IMG/'+batch_sample[0].split('/')[-1]
-				center_image = cv2.imread(name_center)
+				name_center = data_directory+'./IMG/'+batch_sample[0].split('/')[-1]
+				center_image = ndimage.imread(name_center)
 				images.append(center_image)
 
 				# flip center image
 				images.append(np.fliplr(center_image))
 
 				# load left image
-				name_left = './IMG/'+batch_sample[1].split('/')[-1]
+				name_left = data_directory+'./IMG/'+batch_sample[1].split('/')[-1]
 				left_image = ndimage.imread(name_left)
 				images.append(left_image)
 
@@ -213,7 +220,7 @@ def generator(samples, batch_size=32):
 				images.append(np.fliplr(left_image))
 
 				# load right image	
-				right_name = './IMG/'+batch_sample[2].split('/')[-1]
+				right_name = data_directory+'./IMG/'+batch_sample[2].split('/')[-1]
 				right_image = ndimage.imread(right_name)
 				images.append(right_image)
 
@@ -251,24 +258,29 @@ def generator(samples, batch_size=32):
 #print(len(X_train))
 
 samples = create_sample('./data/')
-train_samples, validation_samples = train_test_split(sample_list, test_size=0.2)
+train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 
 # Set our batch size
-batch_size=32
+batch_size=6
 
 # compile and train the model using the generator function
-train_generator = generator(train_samples, batch_size=batch_size)
-validation_generator = generator(validation_samples, batch_size=batch_size)
+train_generator = generator(train_samples,'./data/', batch_size=batch_size)
+validation_generator = generator(validation_samples,'./data/', batch_size=batch_size)
 
 
 model = Nvidia_model()
 model.compile(loss='mse', optimizer='adam')
-model.fit_generator(train_generator, /
-            steps_per_epoch=ceil(len(train_samples)/batch_size), /
-            validation_data=validation_generator, /
-            validation_steps=ceil(len(validation_samples)/batch_size), /
-            epochs=5, verbose=1)
+history_object = model.fit_generator(train_generator, steps_per_epoch=math.ceil(len(train_samples)/batch_size)*6, validation_data=validation_generator, validation_steps=math.ceil(len(validation_samples)/batch_size), epochs=3, verbose=1)
 #model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=5)
+print(history_object.history.keys())
+plt.plot(history_object.history['loss'])
+plt.plot(history_object.history['val_loss'])
+plt.title('model mean squared error loss')
+plt.ylabel('mean squared error loss')
+plt.xlabel('epoch')
+plt.legend(['training set', 'validation set'], loc='upper right')
+plt.savefig('visu_loss.png')
+
 model.save('model.h5')
 print("End")
 
