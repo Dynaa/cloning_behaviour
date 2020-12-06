@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 import csv
-from scipy import ndimage
-
+import matplotlib.pyplot as plt
 import numpy as np 
+
+from scipy import ndimage
 from keras.models import Sequential
 from keras.layers import Flatten, Dense
 from keras.layers.convolutional import Convolution2D
@@ -186,6 +187,14 @@ X_train, y_train = use_left_right_camera('./data/')
 
 model = Nvidia_model()
 model.compile(loss='mse', optimizer='adam')
-model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=5)
+history_object = model.fit(X_train, y_train, validation_split=0.2, shuffle=True, epochs=5)
+print(history_object.history.keys())
+plt.plot(history_object.history['loss'])
+plt.plot(history_object.history['val_loss'])
+plt.title('model mean squared error loss')
+plt.ylabel('mean squared error loss')
+plt.xlabel('epoch')
+plt.legend(['training set', 'validation set'], loc='upper right')
+plt.savefig('visu_loss.png')
 model.save('model.h5')
 print("End")
