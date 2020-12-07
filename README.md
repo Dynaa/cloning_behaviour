@@ -106,7 +106,7 @@ Finally, I made the same recording but on the other way.
 
 As required by the assignement I crearted the final video with drive.py script showing the road from drivers perspective (see below picture).
 
-[Youtube link to the video](https://youtu.be/p2exgPC5LGg)
+[Youtube link to the video](https://youtu.be/rBoUJaTYP3M)
 
 
 
